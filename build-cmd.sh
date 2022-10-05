@@ -65,7 +65,7 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             # just use the provided .sln file.
 
             pushd ../icu/source
-                build_sln "allinone\allinone.sln" "Release|$AUTOBUILD_WIN_VSPLATFORM"
+                msbuild "allinone\allinone.sln" "/t:Build" "/p:Configuration=Release;Platform=$AUTOBUILD_WIN_VSPLATFORM;PlatformToolset=v143"
             popd
 
             mkdir -p "$stage/lib"
