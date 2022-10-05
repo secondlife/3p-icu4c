@@ -65,7 +65,7 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             # just use the provided .sln file.
 
             pushd ../icu/source
-                msbuild "allinone\allinone.sln" "/t:Build" "/p:Configuration=Release;Platform=$AUTOBUILD_WIN_VSPLATFORM;PlatformToolset=v143"
+                msbuild.exe "allinone\allinone.sln" "/t:Build" "/p:Configuration=Release;Platform=$AUTOBUILD_WIN_VSPLATFORM;PlatformToolset=v143"
             popd
 
             mkdir -p "$stage/lib"
@@ -76,7 +76,7 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             else bitdir=./lib64
             fi
             # avoid confusion with Windows find.exe, SIGH
-            /usr/bin/find $bitdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
+            env -i /usr/bin/find $bitdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
 
             cp -R include/* "$stage/include"
 
