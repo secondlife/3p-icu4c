@@ -24,6 +24,29 @@ else
     autobuild="$AUTOBUILD"
 fi
 
+dedupe_path ()
+{
+    # We've observed some weird failures in which the PATH is too big to be
+    # passed to a child process! When that gets munged, we start seeing errors
+    # like failing to understand the 'nmake' command. Thing is, by this point
+    # in the script we've acquired a shocking number of duplicate entries.
+    # Dedup the PATH using Python's OrderedDict, which preserves the order in
+    # which you insert keys.
+    # We find that some of the Visual Studio PATH entries appear both with and
+    # without a trailing slash, which is pointless. Strip those off and dedup
+    # what's left.
+    # Pass the existing PATH as an explicit argument rather than reading it
+    # from the environment to bypass the fact that cygwin implicitly converts
+    # PATH to Windows form when running a native executable. Since we're
+    # setting bash's PATH, leave everything in cygwin form. That means
+    # splitting and rejoining on ':' rather than on os.pathsep, which on
+    # Windows is ';'.
+    # Use python -u, else the resulting PATH will end with a spurious '\r'.
+    export PATH="$(python -u -c "import sys
+from collections import OrderedDict
+print(':'.join(OrderedDict((dir.rstrip('/'), 1) for dir in sys.argv[1].split(':'))))" "$PATH")"
+}
+
 stage="$(pwd)/stage"
 
 # load autobuild provided shell functions and variables
@@ -36,25 +59,7 @@ pushd "$ICU4C_SOURCE_DIR"
         windows*)
             load_vsvars
 
-            # We've observed some weird failures in which the PATH is too big to be
-            # passed to a child process! When that gets munged, we start seeing errors
-            # like failing to understand the 'nmake' command. Thing is, by this point
-            # in the script we've acquired a shocking number of duplicate entries.
-            # Dedup the PATH using Python's OrderedDict, which preserves the order in
-            # which you insert keys.
-            # We find that some of the Visual Studio PATH entries appear both with and
-            # without a trailing slash, which is pointless. Strip those off and dedup
-            # what's left.
-            # Pass the existing PATH as an explicit argument rather than reading it
-            # from the environment to bypass the fact that cygwin implicitly converts
-            # PATH to Windows form when running a native executable. Since we're
-            # setting bash's PATH, leave everything in cygwin form. That means
-            # splitting and rejoining on ':' rather than on os.pathsep, which on
-            # Windows is ';'.
-            # Use python -u, else the resulting PATH will end with a spurious '\r'.
-            export PATH="$(python -u -c "import sys
-from collections import OrderedDict
-print(':'.join(OrderedDict((dir.rstrip('/'), 1) for dir in sys.argv[1].split(':'))))" "$PATH")"
+            dedupe_path
 
             export PATH="$(python -u -c "import sys
 print(':'.join(d for d in sys.argv[1].split(':')
@@ -75,8 +80,11 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             then bitdir=./lib
             else bitdir=./lib64
             fi
+
+            dedupe_path
+
             # avoid confusion with Windows find.exe, SIGH
-            env -i /usr/bin/find $bitdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
+            /usr/bin/find $bitdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
 
             cp -R include/* "$stage/include"
 
