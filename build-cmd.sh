@@ -81,11 +81,7 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             else bitdir=./lib64
             fi
 
-            dedupe_path
-
-            # avoid confusion with Windows find.exe, SIGH
-            /usr/bin/find $bitdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
-
+            cp $bitdir/icu*.lib $stage/lib/
             cp -R include/* "$stage/include"
 
             # populate version_file
