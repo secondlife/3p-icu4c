@@ -36,6 +36,32 @@ pushd "$ICU4C_SOURCE_DIR"
         windows*)
             load_vsvars
 
+            # We've observed some weird failures in which the PATH is too big to be
+            # passed to a child process! When that gets munged, we start seeing errors
+            # like failing to understand the 'nmake' command. Thing is, by this point
+            # in the script we've acquired a shocking number of duplicate entries.
+            # Dedup the PATH using Python's OrderedDict, which preserves the order in
+            # which you insert keys.
+            # We find that some of the Visual Studio PATH entries appear both with and
+            # without a trailing slash, which is pointless. Strip those off and dedup
+            # what's left.
+            # Pass the existing PATH as an explicit argument rather than reading it
+            # from the environment to bypass the fact that cygwin implicitly converts
+            # PATH to Windows form when running a native executable. Since we're
+            # setting bash's PATH, leave everything in cygwin form. That means
+            # splitting and rejoining on ':' rather than on os.pathsep, which on
+            # Windows is ';'.
+            # Use python -u, else the resulting PATH will end with a spurious '\r'.
+            export PATH="$(python -u -c "import sys
+from collections import OrderedDict
+print(':'.join(OrderedDict((dir.rstrip('/'), 1) for dir in sys.argv[1].split(':'))))" "$PATH")"
+
+            export PATH="$(python -u -c "import sys
+print(':'.join(d for d in sys.argv[1].split(':')
+if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', 'Team Tools'))))" "$PATH")"
+
+            which nmake
+
             # According to the icu build instructions for Windows,
             # runConfigureICU doesn't work for the Microsoft build tools, so
             # just use the provided .sln file.
@@ -52,6 +78,13 @@ pushd "$ICU4C_SOURCE_DIR"
             else bitdir=./lib64
             fi
             # avoid confusion with Windows find.exe, SIGH
+            # /usr/bin/find: The environment is too large for exec().
+            while read var
+            do unset $var
+            done < <(compgen -v | grep '^LL_BUILD_' | grep -v '^LL_BUILD_RELEASE$')
+            INCLUDE='' \
+            LIB='' \
+            LIBPATH='' \
             /usr/bin/find $bitdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
 
             cp -R include/* "$stage/include"

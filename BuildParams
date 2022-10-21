@@ -2,3 +2,7 @@
 public_build = true
 build_CYGWIN = true
 build_Darwin = true
+
+# Need viewer-build-variables as well as other shared repositories
+# build_variables_repository_url set in TC project hierarchy
+buildscripts_shared_more_NAMEs="build_variables"
