@@ -76,6 +76,13 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             else bitdir=./lib64
             fi
             # avoid confusion with Windows find.exe, SIGH
+            # /usr/bin/find: The environment is too large for exec().
+            while read var
+            do unset $var
+            done < <(compgen -v | grep '^LL_BUILD_' | grep -v '^LL_BUILD_RELEASE$')
+            INCLUDE='' \
+            LIB='' \
+            LIBPATH='' \
             /usr/bin/find $bitdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
 
             cp -R include/* "$stage/include"
