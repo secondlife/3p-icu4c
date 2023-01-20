@@ -74,8 +74,12 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             mkdir -p "$stage/include"
 
             if [ "$AUTOBUILD_ADDRSIZE" = 32 ]
-            then bitdir=./lib
-            else bitdir=./lib64
+            then
+              libdir=./lib
+              bindir=./bin
+            else
+              libdir=./lib64
+              bindir=./bin64
             fi
             # avoid confusion with Windows find.exe, SIGH
             # /usr/bin/find: The environment is too large for exec().
@@ -85,7 +89,8 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             INCLUDE='' \
             LIB='' \
             LIBPATH='' \
-            /usr/bin/find $bitdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
+            /usr/bin/find $libdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
+            /usr/bin/find $bindir -name 'icu*.dll' -print -exec cp {} $stage/lib/ \;
 
             cp -R include/* "$stage/include"
 
