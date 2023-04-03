@@ -65,12 +65,12 @@
           </map>
           <key>manifest</key>
           <array>
-            <string>lib/libicudata.a</string>
-            <string>lib/libicui18n.a</string>
-            <string>lib/libicuio.a</string>
-            <string>lib/libicutest.a</string>
-            <string>lib/libicutu.a</string>
-            <string>lib/libicuuc.a</string>
+            <string>lib/release/libicudata.a</string>
+            <string>lib/release/libicui18n.a</string>
+            <string>lib/release/libicuio.a</string>
+            <string>lib/release/libicutest.a</string>
+            <string>lib/release/libicutu.a</string>
+            <string>lib/release/libicuuc.a</string>
           </array>
           <key>name</key>
           <string>darwin</string>
