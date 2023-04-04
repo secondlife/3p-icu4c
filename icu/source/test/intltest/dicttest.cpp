@@ -74,7 +74,7 @@ void DictionaryWordTest::TestWordBoundaries() {
 
     TextFile phrases(DICTIONARY_TEST_FILE, "UTF8", status);
     if (U_FAILURE(status)) {
-        dataerrln("Can't open "DICTIONARY_TEST_FILE": %s; skipping test",
+        dataerrln("Can't open " DICTIONARY_TEST_FILE ": %s; skipping test",
               u_errorName(status));
         return;
     }

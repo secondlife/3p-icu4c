@@ -118,7 +118,7 @@
           </map>
           <key>manifest</key>
           <array>
-            <string>lib</string>
+            <string>lib/release</string>
           </array>
           <key>name</key>
           <string>windows</string>

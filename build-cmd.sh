@@ -60,8 +60,6 @@ print(':'.join(OrderedDict((dir.rstrip('/'), 1) for dir in sys.argv[1].split(':'
 print(':'.join(d for d in sys.argv[1].split(':')
 if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', 'Team Tools'))))" "$PATH")"
 
-            which nmake
-
             # According to the icu build instructions for Windows,
             # runConfigureICU doesn't work for the Microsoft build tools, so
             # just use the provided .sln file.
@@ -70,7 +68,7 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
                 build_sln "allinone\allinone.sln" "Release|$AUTOBUILD_WIN_VSPLATFORM"
             popd
 
-            mkdir -p "$stage/lib"
+            mkdir -p "$stage/lib/release"
             mkdir -p "$stage/include"
 
             if [ "$AUTOBUILD_ADDRSIZE" = 32 ]
@@ -89,8 +87,8 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             INCLUDE='' \
             LIB='' \
             LIBPATH='' \
-            /usr/bin/find $libdir -name 'icu*.lib' -print -exec cp {} $stage/lib/ \;
-            /usr/bin/find $bindir -name 'icu*.dll' -print -exec cp {} $stage/lib/ \;
+            /usr/bin/find $libdir -name 'icu*.lib' -print -exec cp {} $stage/lib/release \;
+            /usr/bin/find $bindir -name 'icu*.dll' -print -exec cp {} $stage/lib/release \;
 
             cp -R include/* "$stage/include"
 
