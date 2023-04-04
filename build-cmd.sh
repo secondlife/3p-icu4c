@@ -120,6 +120,10 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
                 make install
             popd
 
+            # Move the libraries to the place the autobuild manifest expects 
+            mkdir $stage/lib/release
+            mv $stage/lib/*.a $stage/lib/release
+
             # populate version_file
             cc -DVERSION_HEADER_FILE="\"$VERSION_HEADER_FILE\"" \
                -DVERSION_MACRO="$VERSION_MACRO" \
