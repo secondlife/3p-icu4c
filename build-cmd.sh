@@ -31,30 +31,13 @@ source_environment_tempfile="$stage/source_environment.sh"
 "$autobuild" source_environment > "$source_environment_tempfile"
 . "$source_environment_tempfile"
 
+# remove_cxxstd
+source "$(dirname "$AUTOBUILD_VARIABLES_FILE")/functions"
+
 pushd "$ICU4C_SOURCE_DIR"
     case "$AUTOBUILD_PLATFORM" in
         windows*)
             load_vsvars
-
-            # We've observed some weird failures in which the PATH is too big to be
-            # passed to a child process! When that gets munged, we start seeing errors
-            # like failing to understand the 'nmake' command. Thing is, by this point
-            # in the script we've acquired a shocking number of duplicate entries.
-            # Dedup the PATH using Python's OrderedDict, which preserves the order in
-            # which you insert keys.
-            # We find that some of the Visual Studio PATH entries appear both with and
-            # without a trailing slash, which is pointless. Strip those off and dedup
-            # what's left.
-            # Pass the existing PATH as an explicit argument rather than reading it
-            # from the environment to bypass the fact that cygwin implicitly converts
-            # PATH to Windows form when running a native executable. Since we're
-            # setting bash's PATH, leave everything in cygwin form. That means
-            # splitting and rejoining on ':' rather than on os.pathsep, which on
-            # Windows is ';'.
-            # Use python -u, else the resulting PATH will end with a spurious '\r'.
-            export PATH="$(python -u -c "import sys
-from collections import OrderedDict
-print(':'.join(OrderedDict((dir.rstrip('/'), 1) for dir in sys.argv[1].split(':'))))" "$PATH")"
 
             export PATH="$(python -u -c "import sys
 print(':'.join(d for d in sys.argv[1].split(':')
@@ -65,7 +48,7 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             # just use the provided .sln file.
 
             pushd ../icu/source
-                build_sln "allinone\allinone.sln" "Release|$AUTOBUILD_WIN_VSPLATFORM"
+                msbuild.exe "allinone\allinone.sln" "/t:Build" "/p:Configuration=Release;Platform=$AUTOBUILD_WIN_VSPLATFORM;PlatformToolset=v143"
             popd
 
             mkdir -p "$stage/lib/release"
@@ -105,9 +88,10 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             pushd "source"
 
                 opts="-arch $AUTOBUILD_CONFIGURE_ARCH $LL_BUILD_RELEASE -DU_CHARSET_IS_UTF8=1"
-                export CFLAGS="$opts"
+                plainopts="$(remove_cxxstd $opts)"
+                export CFLAGS="$plainopts"
                 export CXXFLAGS="$opts"
-                export LDFLAGS="$opts"
+                export LDFLAGS="$plainopts"
                 export common_options="--prefix=${stage} --enable-shared=no \
                     --enable-static=yes --disable-dyload --enable-extras=no \
                     --enable-samples=no --enable-tests=no --enable-layout=no"
@@ -116,7 +100,7 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
                 # HACK: Break format layout so boost can find the library.
                 ./runConfigureICU MacOSX $common_options --libdir=${stage}/lib/
 
-                make -j2
+                make -j$(nproc)
                 make install
             popd
 
@@ -135,8 +119,8 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             pushd "source"
                 ## export CC="gcc-4.1"
                 ## export CXX="g++-4.1"
-                export CFLAGS="-m$AUTOBUILD_ADDRSIZE $LL_BUILD_RELEASE"
-                export CXXFLAGS="$CFLAGS"
+                export CXXFLAGS="-m$AUTOBUILD_ADDRSIZE $LL_BUILD_RELEASE"
+                export CFLAGS="$(remove_cxxstd $CFLAGS)"
                 export common_options="--prefix=${stage} --enable-shared=no \
                     --enable-static=yes --disable-dyload --enable-extras=no \
                     --enable-samples=no --enable-tests=no --enable-layout=no"
@@ -145,7 +129,7 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
                 # HACK: Break format layout so boost can find the library.
                 ./runConfigureICU Linux $common_options --libdir=${stage}/lib/
 
-                make -j2
+                make -j$(nproc)
                 make install
             popd
 
@@ -158,6 +142,6 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
         ;;
     esac
     mkdir -p "$stage/LICENSES"
-	sed -e 's/<[^>][^>]*>//g' -e '/^ *$/d' license.html >"$stage/LICENSES/icu.txt"
-	cp unicode-license.txt "$stage/LICENSES/"
+    sed -e 's/<[^>][^>]*>//g' -e '/^ *$/d' license.html >"$stage/LICENSES/icu.txt"
+    cp unicode-license.txt "$stage/LICENSES/"
 popd
