@@ -31,6 +31,9 @@ source_environment_tempfile="$stage/source_environment.sh"
 "$autobuild" source_environment > "$source_environment_tempfile"
 . "$source_environment_tempfile"
 
+# remove_cxxstd
+source "$(dirname "$AUTOBUILD_VARIABLES_FILE")/functions"
+
 pushd "$ICU4C_SOURCE_DIR"
     case "$AUTOBUILD_PLATFORM" in
         windows*)
@@ -41,7 +44,8 @@ pushd "$ICU4C_SOURCE_DIR"
             # just use the provided .sln file.
 
             pushd ../icu/source
-                msbuild.exe "allinone\allinone.sln" "/t:Build" "/p:Configuration=Release;Platform=$AUTOBUILD_WIN_VSPLATFORM;PlatformToolset=v143"
+            msbuild.exe "allinone\allinone.sln" "/t:Build" \
+                "/p:Configuration=Release;Platform=$AUTOBUILD_WIN_VSPLATFORM;PlatformToolset=$AUTOBUILD_WIN_VSTOOLSET"
             popd
 
             mkdir -p "$stage/lib"
@@ -68,9 +72,10 @@ pushd "$ICU4C_SOURCE_DIR"
             pushd "source"
 
                 opts="-arch $AUTOBUILD_CONFIGURE_ARCH $LL_BUILD_RELEASE -DU_CHARSET_IS_UTF8=1"
-                export CFLAGS="$opts"
+                plainopts="$(remove_cxxstd $opts)"
+                export CFLAGS="$plainopts"
                 export CXXFLAGS="$opts"
-                export LDFLAGS="$opts"
+                export LDFLAGS="$plainopts"
                 export common_options="--prefix=${stage} --enable-shared=no \
                     --enable-static=yes --disable-dyload --enable-extras=no \
                     --enable-samples=no --enable-tests=no --enable-layout=no"
@@ -94,8 +99,8 @@ pushd "$ICU4C_SOURCE_DIR"
             pushd "source"
                 ## export CC="gcc-4.1"
                 ## export CXX="g++-4.1"
-                export CFLAGS="-m$AUTOBUILD_ADDRSIZE $LL_BUILD_RELEASE"
-                export CXXFLAGS="$CFLAGS"
+                export CXXFLAGS="-m$AUTOBUILD_ADDRSIZE $LL_BUILD_RELEASE"
+                export CFLAGS="$(remove_cxxstd $CXXFLAGS)"
                 export common_options="--prefix=${stage} --enable-shared=no \
                     --enable-static=yes --disable-dyload --enable-extras=no \
                     --enable-samples=no --enable-tests=no --enable-layout=no"
@@ -117,6 +122,6 @@ pushd "$ICU4C_SOURCE_DIR"
         ;;
     esac
     mkdir -p "$stage/LICENSES"
-	sed -e 's/<[^>][^>]*>//g' -e '/^ *$/d' license.html >"$stage/LICENSES/icu.txt"
-	cp unicode-license.txt "$stage/LICENSES/"
+    sed -e 's/<[^>][^>]*>//g' -e '/^ *$/d' license.html >"$stage/LICENSES/icu.txt"
+    cp unicode-license.txt "$stage/LICENSES/"
 popd

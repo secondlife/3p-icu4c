@@ -15,8 +15,6 @@
       <string>LICENSES/icu.txt</string>
       <key>name</key>
       <string>icu4c</string>
-      <key>use_scm_version</key>
-      <boolean>true</boolean>
       <key>platforms</key>
       <map>
         <key>common</key>
@@ -126,6 +124,8 @@
           <string>windows</string>
         </map>
       </map>
+      <key>version_file</key>
+      <string>version.txt</string>
     </map>
     <key>type</key>
     <string>autobuild</string>
