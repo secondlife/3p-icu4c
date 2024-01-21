@@ -62,17 +62,6 @@ finit_owner(FILE         *f,
     uprv_memset(result, 0, sizeof(UFILE));
     result->fFileno = fileno(f);
 
-#ifdef U_WINDOWS
-    if (0 <= result->fFileno && result->fFileno <= 2) {
-        /* stdin, stdout and stderr need to be special cased for Windows 98 */
-#if _MSC_VER >= 1400
-        result->fFile = &__iob_func()[_fileno(f)];
-#else
-        result->fFile = &_iob[_fileno(f)];
-#endif
-    }
-    else
-#endif
     {
         result->fFile = f;
     }
