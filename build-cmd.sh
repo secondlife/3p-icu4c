@@ -48,7 +48,8 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
             # just use the provided .sln file.
 
             pushd ../icu/source
-                msbuild.exe "allinone\allinone.sln" "/t:Build" "/p:Configuration=Release;Platform=$AUTOBUILD_WIN_VSPLATFORM;PlatformToolset=v143"
+            msbuild.exe "allinone\allinone.sln" "/t:Build" \
+                "/p:Configuration=Release;Platform=$AUTOBUILD_WIN_VSPLATFORM;PlatformToolset=$AUTOBUILD_WIN_VSTOOLSET"
             popd
 
             mkdir -p "$stage/lib"
@@ -103,7 +104,7 @@ if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', '
                 ## export CC="gcc-4.1"
                 ## export CXX="g++-4.1"
                 export CXXFLAGS="-m$AUTOBUILD_ADDRSIZE $LL_BUILD_RELEASE"
-                export CFLAGS="$(remove_cxxstd $CFLAGS)"
+                export CFLAGS="$(remove_cxxstd $CXXFLAGS)"
                 export common_options="--prefix=${stage} --enable-shared=no \
                     --enable-static=yes --disable-dyload --enable-extras=no \
                     --enable-samples=no --enable-tests=no --enable-layout=no"
