@@ -39,10 +39,6 @@ pushd "$ICU4C_SOURCE_DIR"
         windows*)
             load_vsvars
 
-            export PATH="$(python -u -c "import sys
-print(':'.join(d for d in sys.argv[1].split(':')
-if not any(frag in d for frag in ('CommonExtensions', 'VSPerfCollectionTools', 'Team Tools'))))" "$PATH")"
-
             # According to the icu build instructions for Windows,
             # runConfigureICU doesn't work for the Microsoft build tools, so
             # just use the provided .sln file.
