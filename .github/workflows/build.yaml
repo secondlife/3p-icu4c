@@ -5,15 +5,11 @@ jobs:
     strategy:
       matrix:
         os: [windows-2022, macos-11, ubuntu-22.04]
-        addrsize: ["64"]
-        include:
-          - os: windows-2022
-            addrsize: "32"
     runs-on: ${{ matrix.os }}
     steps:
       - uses: secondlife/action-autobuild@v3
         with:
-          addrsize: ${{ matrix.addrsize }}
+          addrsize: "64"
   release:
     needs: build
     runs-on: [ubuntu-latest]
