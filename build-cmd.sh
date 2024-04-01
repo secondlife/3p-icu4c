@@ -124,8 +124,18 @@ pushd "$ICU4C_SOURCE_DIR"
                 # HACK: Break format layout so boost can find the library.
                 ./runConfigureICU Linux $common_options --libdir=${stage}/lib/
 
-                make -j$(nproc)
+                make
                 make install
+
+                echo ****DEBUG OUTPUT****
+                echo ""
+                objdump -x common/utf_impl.ao | grep utf8_countTrailBytes_48
+                echo ""
+                ld -v
+                echo ""
+                gcc -v
+                echo ""
+                echo ****END DEBUG OUTPUT****
             popd
 
             # populate version_file
