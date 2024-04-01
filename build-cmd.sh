@@ -101,7 +101,7 @@ pushd "$ICU4C_SOURCE_DIR"
                 make install
             popd
 
-            # Move the libraries to the place the autobuild manifest expects 
+            # Move the libraries to the place the autobuild manifest expects
             mkdir $stage/lib/release
             mv $stage/lib/*.a $stage/lib/release
 
@@ -112,10 +112,8 @@ pushd "$ICU4C_SOURCE_DIR"
             "$stage/version" > "$stage/version.txt"
             rm "$stage/version"
         ;;
-        linux*)
+        linux64)
             pushd "source"
-                ## export CC="gcc-4.1"
-                ## export CXX="g++-4.1"
                 export CXXFLAGS="-m$AUTOBUILD_ADDRSIZE $LL_BUILD_RELEASE"
                 export CFLAGS="$(remove_cxxstd $CXXFLAGS)"
                 export common_options="--prefix=${stage} --enable-shared=no \
